@@ -1,0 +1,561 @@
+Next js is a react framework which handles server side implementation
+
+
+
+key features and benefits of NextJS
+
+1. server side rendering i.e. preparing the contents of a page on the server instead of on the client.
+- it greatly improves SEO as the page is automatically pre-rendered on the server, this improves load time and provide data to search engine crawlers as a typical react page only has an index.html file with not so much content
+- blending client side and server sde. fetch data on the server and render finished pages
+
+2. file based routing
+- typically in react, we use react router where we define routes with code. in next js we define pages and routes with files and folders instead of code.
+- this means less code, less work and easy to understand
+
+3. Fullstack capabilities to our react app
+- this helps with authentication, storing and fetching data etc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a new next js app called routing
+??????QUESTION?????? what are the different ways that we can run a next js app.
+??????QUESTION?????? run this project in dev mode
+??????QUESTION?????? refactor your code to print Hello Next JS
+
+
+
+
+
+
+
+
+
+
+
+
+
+~ npx create-next-app
+
+this will then prompt you to enter the project name
+
+
+the 3 most important files will be public for storing static files, styles and pages which is the most important
+
+
+to run the project use npm run dev
+
+npm run build is to build for production and npm start to run the production version
+
+
+ ~ cd appName
+
+ ~ npm run dev
+
+
+ what we see on the screen is the result of index.js file in pages
+
+
+ open index and delete everything inside the main div. print a h1 tag of Hello Next World
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? do the following clean up, in styles delete Home.module. replace the code in globals with the code below
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Open+Sans:wght@400;700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Open Sans', 'Lato', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lato', sans-serif;
+}
+
+??????QUESTION?????? in pages delete everything except _app.js
+??????QUESTION?????? when a user goes to / print on the screen this is the home page and when a user goes to /about print on the screen this is the about page
+??????QUESTION?????? assuming we have a portfolio with several projects, set up a route /portfolio for the default portfolio page and /portfolio/"projectId" for the projects. for now they should just print portfolio and projectId respectively
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////
+PAGES AND FILE BASED ROUTING
+/////////////////////
+
+
+
+
+do the following clean up
+
+in styles delete Home.module and update globals to contain the following code
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Open+Sans:wght@400;700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Open Sans', 'Lato', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Lato', sans-serif;
+}
+
+
+in pages delete everything except _app.js
+
+in a traditional react app, we use react router for our routing
+
+
+in next js we create react component files in the pages folder and let next js infer the routes from the folder structure
+
+
+it takes the file name as part of the url e.g. if we had inside our pages folder a file called about.js, this will mean www.domain.com/about
+
+
+inside pages, create a file called index.js which will be the default page for /
+
+
+we will write a regular react component here and export it
+
+const HomePage = () => {
+    return(
+        <div>
+            <h1>The Home Page</h1>
+        </div>
+    )
+}
+
+export default HomePage
+
+
+when we visit /, our screen should print The Home Page
+
+
+
+create a new file in pages called about.js
+
+const About = () => {
+    return(
+        <div>
+            <h1>The About Page</h1>
+        </div>
+    )
+}
+
+export default About
+
+visiting /about will show this component
+
+
+we can also have nesting in pages. create a folder called portfolio
+
+
+inside these folder, the default file is index.js which will show when the user navigates to /portfolio
+
+
+we can also have placeholders where we can use to pass things like ids. we only need to enclose them in [square brackets].js
+
+
+/portfolio/index.js
+
+const Portfolio = () => {
+    return(
+        <div>
+            <h1>Portfolio</h1>
+        </div>
+    )
+}
+
+export default Portfolio
+
+
+/portfolio/[projectId].js
+
+const ProjectId = () => {
+    return(
+        <div>
+            <h1>ProjectId</h1>
+        </div>
+    )
+}
+
+export default ProjectId
+
+
+it is also possible to have a dynamic folder in [square brackets] and nest other files inside it including a dynamic file
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? console log the value passed into the url in [projectId].js
+
+
+
+
+
+
+
+
+
+
+
+
+we can get access to the dynamic value passed into our projectId url by using useRouter which is a react hook we import from nextjs
+
+import {useRouter} from "next/router";
+
+
+const router = useRouter()
+
+this will return an object which has several methods which we will look at later in the course and we also get data properties
+
+
+for the data properties, we get the following
+
+router.pathname - /portfolio/[projectId]
+router.query - {projectId: 5}
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? assuming we have a blog post where we can pass several query parameters. the number of queries passed changes based on what we want to search for e.g.
+/blog/2020
+/blog/2020/12
+/blog/2020/12/4
+implement this and console log the dynamic values of the url in our component
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at catch all routes
+
+
+assuming we have a blog post where we can pass several query parameters. the number of queries passed changes based on what we want to search for e.g.
+
+/blog/2020      - will filter blogs for 2020
+/blog/2020/12      - will filter blogs for 2020 december
+/blog/2020/12/4      - will filter blogs for 2020 december 4th blog post
+
+
+in order to implement this dynamic url, we will use catch all
+
+
+create a folder called blog and create a file called [...slug]
+
+import {useRouter} from "next/router";
+
+const BlogPost = () => {
+
+    const router = useRouter()
+
+    console.log(router.query);
+
+    return(
+        <div>
+            <h1>Blog Posts</h1>
+        </div>
+    )
+}
+
+export default BlogPost
+
+
+router.query will console log an array with all the dynamic parts of the url as items in the array
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? in our main index.js file, create an ul which will contain links to the about page and portfolio/index page
+??????QUESTION?????? add links in portfolio/index that will go to project ids using the projects below
+
+    const projects = [
+        {id: 1, name: "bc-vote"},
+        {id: 2, name: "amazon-cellular"},
+        {id: 3, name: "netflix clone"}
+    ]
+
+
+
+
+
+
+
+
+
+
+
+
+we will now create links in our main index.js file to the other parts of our app i.e. about and portfolio
+
+
+we can use a tags but this will be against react principles as it will cause the whole page to refresh
+
+
+we will use Link component which we will import form next/link
+
+
+import Link from "next/link";
+
+
+    <ul>
+        <li>
+            <Link href="/about">About</Link>
+        </li>
+        <li>
+            <Link href="/portfolio">Portfolio</Link>
+        </li>
+    </ul>
+
+
+
+
+we will now add links in portfolio/index that will go to project ids
+
+    const projects = [
+        {id: 1, name: "bc-vote"},
+        {id: 2, name: "amazon-cellular"},
+        {id: 3, name: "netflix clone"}
+    ]
+
+    const renderProjects = () => {
+        return projects.map(
+            project => {
+                return(
+                    <li key={project.id}>
+                        <Link href={`/portfolio/${project.id}`}>{project.name}</Link>
+                    </li>
+                )
+            }
+        )
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? use the alternative syntax of passing the href in a next js Link
+
+
+
+
+
+
+
+
+
+
+
+building a string like href={`/portfolio/${project.id}`} can be tiresome and annoying. next js provides us with a better alternative
+
+
+instead of passing a string, you can pass an object
+
+
+        <Link
+            href={{
+                pathname: "/portfolio/[id]",
+                query: {id: project.id}
+            }}
+        >
+            {project.name}
+        </Link>
+
+these are the same pathname and query variables that we saw when we console logged useRouter
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? using programmatic navigation create a button in portfolio that takes the user back to the home page
+
+
+
+
+
+
+
+
+
+
+
+
+we can also use useRouter to perform programmatic navigation
+
+we will create a button in portfolio that takes the user back to the home page
+
+    const goHome = () => {
+        router.push("/")
+    }
+
+<button onClick={goHome}>Home page</button>
+
+
+we can not only use a string for the url but also the object method
+
+    const goHome = () => {
+        router.push({
+            pathname: "/"
+        })
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a custom 404 page which prints out Page not found
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+next js provides a default 404 page. this shows when we go to an unavailable link
+
+
+we can also create a custom 404 page
+
+
+inside pages, create a 404.js file
+
+
+const PageNotFound = () => {
+    return(
+        <div>
+            <h1>Page Not Found</h1>
+        </div>
+    )
+}
+
+export default PageNotFound
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
