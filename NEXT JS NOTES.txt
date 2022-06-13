@@ -17,7 +17,22 @@ key features and benefits of NextJS
 
 
 
+it is not possible to build a full feature rich app with react only as it is only responsible for building user interfaces
 
+
+as a developer, you'll need to figure out ways of adding other features like routing, styling, authentication etc.
+
+
+next js uses react for builing user interfaces and it comes loaded with features e.g routing, styling, authentication etc. that enable you to build a production ready application
+
+
+next js simplifies the process of building a react app for production in the following ways
+1. File based routing
+2. pre rendering
+3. API routes
+4. support for css modules
+5. authentication
+6. dev and prod build system
 
 
 
@@ -231,7 +246,14 @@ it is also possible to have a dynamic folder in [square brackets] and nest other
 
 
 
+
+
+
+
+
+
 ??????QUESTION?????? console log the value passed into the url in [projectId].js
+
 
 
 
@@ -421,7 +443,7 @@ we will now add links in portfolio/index that will go to project ids
 
 
 
-??????QUESTION?????? use the alternative syntax of passing the href in a next js Link
+??????QUESTION?????? use the alternative syntax of passing the href in a next js Link in portfolio/index
 
 
 
@@ -449,6 +471,8 @@ instead of passing a string, you can pass an object
         </Link>
 
 these are the same pathname and query variables that we saw when we console logged useRouter
+
+
 
 
 
@@ -550,6 +574,114 @@ export default PageNotFound
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////
+PRE RENDERING AND DATA FETCHING
+////////////////////////////
+
+
+
+~ npx create-next-app prerendering
+
+
+by default, next js pre renders every page in the application
+
+
+pre-rendering improves performance and SEO
+
+
+next js supports two forms of pre rendering
+1. static generation
+2. server side rendering
+
+
+static generation is where the HTML pages are generated at build time
+
+
+HTML with all the data that makes uo the content of the web page are generated in advance when when you build your application
+
+
+this is the recommended method to pre render whenever possible as pages can be built once, cached by a CDN and served to the client almost instantly
+
+
+examples include blog pages, e-commerce product pages, documentation and marketing pages
+
+
+by default, the html for every page will automatically be statically generated when we build our application
+
+
+static generation can be done with or without data fetched externally. in the case that data needs to be fetched, the html can only be generated (pre rendered) after fetching data
+
+
+in styles delete Home, in pages delete the api folder and the content of the index file with a simple h1 tag
+
+
+we will look at how to fetch data statically ahead of time. we will fetch a list of users from the JSON Placeholder api
+
+
+in pages, create a new file called users.js
+
+const UsersList = () => {
+    return(
+        <h1>List of users</h1>
+    )
+}
+
+export default UsersList
+
+
+in next js when exporting a page component, you can also export an async function called getStaticProps which will run at build time in production and inside the function you can fetch external data and send it as props to the page
+
+import axios from "axios";
+
+const UsersList = ({users}) => {
+    return(
+        <>
+            <h1>List of users</h1>
+            {users.map(
+                user => {
+                    return(
+                        <div key={user.id}>
+                            <p>{user.name}</p>
+                            <p>{user.email}</p>
+                        </div>
+                    )
+            })}
+        </>
+    )
+}
+
+export default UsersList
+
+export async function getStaticProps() {
+    const response = await axios.get("https://jsonplaceholder.typicode.com/users")
+    console.log(response.data);
+    return{
+        props:{
+            users: response.data
+        }
+    }
+}
+
+
+the console log shows in the server terminal and not in the browser like react
+
+
+we also need to return from getStaticProps and object which contains a key props. the key props should be an object too with key value pairs of the data we want to pass into our component
 
 
 

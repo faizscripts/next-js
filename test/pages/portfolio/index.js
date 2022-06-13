@@ -14,35 +14,26 @@ const Portfolio = () => {
     const renderProjects = () => {
         return projects.map(
             project => {
-                return(
+                return (
                     <li key={project.id}>
-                        <Link
-                            href={{
-                                pathname: "/portfolio/[id]",
-                                query: {id: project.id}
-                            }}
-                        >
-                            {project.name}
-                        </Link>
+                        <Link href={{
+                            pathname: "/portfolio/[projectId]",
+                            query: {projectId: project.id}
+                        }}>{project.name}</Link>
                     </li>
                 )
             }
         )
     }
 
-    const goHome = () => {
-        router.push({
-            pathname: "/"
-        })
-    }
-
     return(
         <div>
-            <h1>Portfolio</h1>
+            <h1>This is the portfolio page</h1>
+            <h2>Projects</h2>
             <ul>
                 {renderProjects()}
             </ul>
-            <button onClick={goHome}>Home page</button>
+            <button onClick={() => router.push("/")}>Home page</button>
         </div>
     )
 }

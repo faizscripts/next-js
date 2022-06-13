@@ -1,14 +1,16 @@
 import {useRouter} from "next/router";
 
-const ProjectId = () => {
+const Blog = () => {
 
     const router = useRouter()
 
+    console.log(router.query);
+
     return(
         <div>
-            <h1>ProjectId</h1>
+            <h1>Blog page</h1>
         </div>
     )
 }
 
-export default ProjectId
+export default Blog
