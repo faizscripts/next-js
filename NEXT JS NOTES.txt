@@ -579,6 +579,14 @@ export default PageNotFound
 
 
 
+??????QUESTION?????? create a new next app called prerendering
+??????QUESTION?????? what are the two forms of pre rendering supported by next js
+??????QUESTION?????? which is the default method of pre rendering in next js
+??????QUESTION?????? do the necessary clean up to the project and print home page in index
+??????QUESTION?????? create a new file route to /users which will print out List of users
+ ??????QUESTION?????? fetch the name and email of users  from https://jsonplaceholder.typicode.com/users and print them out in /users. HINT!! use best practise and project structure
+
+
 
 
 
@@ -682,6 +690,886 @@ the console log shows in the server terminal and not in the browser like react
 
 
 we also need to return from getStaticProps and object which contains a key props. the key props should be an object too with key value pairs of the data we want to pass into our component
+
+
+this works well, however it is not how you would write a production application. the printing out of details of a user should be done by a separate user component
+
+
+in project root, create a folder called components and inside it create a new file called user.js
+
+const User = ({user}) => {
+    return(
+        <div>
+            <p>{user.name}</p>
+            <p>{user.email}</p>
+        </div>
+    )
+}
+
+export default User
+
+
+we will import this in users.js and use it in our map
+
+    <div key={user.id}>
+        <User user={user} />
+    </div>
+
+
+with this we can see the difference between pages and components. components don't need the special routing features provided in next js
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at a few important details of the getStaticProps function we had used in users.js
+
+
+1. getStaticProps only runs on the server side. the code won't even be included in the bundle.js file sent to the browser
+
+
+2. with this we can write server side code directly in getStaticProps e.g. accessing the file system, querying a db
+
+
+3. this is allowed only in a page and cannot be run from a regular component file
+
+
+4. getStaticProps should return an object and the object should contain a props key which is also an object containing key value pairs of data we want to pass to the page component
+
+return{
+    props:{
+        users: usersArray
+    }
+}
+
+
+5. getStaticProps will run at build time
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? run our prerendering app in production mode and inspect the terminal and the folders created
+??????QUESTION?????? in pages/index, create a link to users.js. rebuild the project and run it again
+??????QUESTION?????? run the code in your browser, open the network tab, hard reload and look at the resources received from the server when hard reloading / and /users. explain the difference between the first run above and this second run after adding the users link
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at how to build our next js application and take a look at the build output to understand the static generation form of pre rendering more
+
+
+in our root folder, we have a .next folder which is created automatically when we run our project in dev mode. we will delete this as running our project in production mode will also automatically create a new .next file
+
+
+after deleting, run npm run build in the terminal
+
+
+the output of this is the types of pages created e.g. static, SSG and the sizes of the pages. green colors on the sizes show they're optimum
+
+
+inside out automatically created .next folder, the important files to look at are /server and /static
+
+
+/server contains a pages folder which will contain all the html files generated with some js files
+
+
+/static/chunks contains a pages folder too which will contain js files necessary for hydration i.e. making our html files responsive
+
+
+we will now run our build application using the start script
+
+~ npm start
+
+
+if we open this in our browser network tab, we will note that going to / loads the index chunk and /users loads the users chunk
+
+
+however if we add a link to /users in index, rebuild and run again, we will note that in the network tab, going to / loads the index and users chunk as well as it is linked
+
+
+the advantage to this is that when we go to /, navigating to /users will be instantaneous as we would have already loaded the users chunk
+
+
+this is the default behaviour of next js. any <Link> component in the viewport (initially or through scroll) will be prefetched by default (including the corresponding data) for pages using Static Generation
+
+
+when a page with getStaticProps is pre rendered at build time, in addition to the page HTML file, next.js generates a json file holding the result of running getStaticProps
+
+
+this file will be used in client side routing through next/link or next/ router which is what is happening in our case. our index contains a link to users therefore going to / loads the users data. going to /users directly will instead use the users.html file generated at build time
+
+
+in simpler terms, client side page transitions will not call getStaticProps as only the exported json is used
+
+
+
+create pages/posts/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? in pages, create a folder called posts and inside it index.js and [postId]. we will use these tp statically generate dynamic data
+??????QUESTION?????? in index.js fetch the first 3 posts from https://jsonplaceholder.typicode.com/posts. print the post id and title on the screen using h2
+??????QUESTION?????? [postId].js should print out the details of a specific post i.e. post id, title and body
+??????QUESTION?????? wire up links from root index.js to [postId].js and test this out on the browser
+
+
+
+
+
+
+
+
+
+our index page pre renders without data
+users page pre renders after fetching data from an external api
+we will now look at how to statically generate pages (default pre rendering) using dynamic data
+
+
+we will use the example of a blog post which containing a list and a dynamic blogId which shows the details of a blog post
+
+
+we will use jsonplaceholder /posts and /posts/1
+
+
+create a folder in pages called posts and inside it create index.js which is going to be our post list component fetching from jsonplaceholder /posts using getStaticProps
+
+
+we will only use the first 3 posts for simplicity using .slice(0,3)
+
+
+const Posts = ({posts}) => {
+    return(
+        <div>
+            PostList
+            {posts.map(
+                post => {
+                    return(
+                        <div key={post.id}>
+                            <h2>{post.id} {post.title} </h2>
+                            <hr/>
+                        </div>
+                    )
+                }
+            )}
+        </div>
+    )
+}
+
+export default Posts
+
+export async function getStaticProps() {
+    const response = await axios.get("https://jsonplaceholder.typicode.com/posts")
+
+    return {
+        props: {
+            posts: response.data.slice(0,3)
+        }
+    }
+}
+
+
+
+
+
+in the pages folder create [postId].js to show a specific post which we will also prerender data we're fetching from https://jsonplaceholder.typicode.com/posts/postId
+
+
+we will extract the post id from the url. in order to get access to the url params, getStaticProps receives an argument by convention called context which is an object containing a key called params which is also an object containing postId
+
+function Post({post}) {
+    return(
+        <>
+            <h2>{post.id} {post.title}</h2>
+            <p>{post.body}</p>
+        </>
+    )
+}
+
+export default Post
+
+export async function getStaticProps(context) {
+    const {params} = context
+    const response = await axios.get(`https://jsonplaceholder.typicode.com/posts/${params.postId}`)
+    return{
+        props: {
+            post: response.data
+        }
+    }
+}
+
+
+
+the last thing will be to add links from the home page to the post id page
+
+root index.js
+
+    <Link href="/posts">Posts</Link>
+
+
+post index.js
+
+    <Link href={`/posts/${post.id}`}>
+        <h2>{post.id} {post.title} </h2>
+    </Link>
+
+
+if we try to run this in the browser, everything runs well but we get an error in /posts/[postId] getStaticPaths is required for dynamic SSG pages and is missing for '/posts/[postId]'
+
+
+a dynamic parameter means we wont be having a single page. the html will remain the same but the data will differ for every postId
+
+
+next.js is basically telling us to tell it what postIds to consider when generating the pages at build time which is done using the getStaticPaths function
+
+
+[postId].js we will define getStaticPaths which returns an object containing a paths key which determines which paths will be statically generated at build time
+
+paths is an array containing objects with key params which are all the paths that will be considered during build
+
+the value of params will be an object of postId with the Ids passed as strings
+
+the return object contains another key called fallback which we will discuss later. for now we will just set its value to false
+
+
+export async function getStaticPaths() {
+
+    return{
+        paths: [
+            {
+                params: {postId: "1"}
+            },
+            {
+                params: {postId: "2"}
+            },
+            {
+                params: {postId: "3"}
+            }
+        ],
+        fallback: false
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? instead of 3 posts, fetch all the posts we get from our api and wire them up in our app
+
+
+
+
+
+
+
+
+
+
+
+
+our app works well however there's an issue with our getStaticPaths function. we had hardcoded the 3 params to match the 3 posts that we had fetched
+
+
+this isn't practical in a real world situation though
+
+
+in posts getStaticProps, remove the slice method
+
+[postId].js
+
+export async function getStaticPaths() {
+
+    const response = await axios.get("https://jsonplaceholder.typicode.com/posts")
+
+    const pathsArray = response.data.map(
+        post => {
+            return {
+                params: {
+                    postId: `${post.id}`
+                }
+            }
+        }
+    )
+
+    return{
+        paths: pathsArray,
+        fallback: false
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? what are the different values that we can pass to the fallback key in getStaticPaths
+??????QUESTION?????? what happens when we use false and which scenario is most suitable to use false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at the fallback key returned from getStaticPaths
+
+
+it is mandatory to add this key thats why we included it and set its value to false
+
+
+it accepts 3 possible values
+
+1. false
+2. true
+3. 'blocking'
+
+
+at the moment, our getStaticPaths function is accommodating for urls from /posts/1 to /posts/100
+
+
+when the value of getStaticPaths fallback is set to false:
+
+- the paths returned from getStaticPaths will be rendered to HTML at build time by getStaticProps
+- any paths not returned by getStaticPaths will result in a 404 page
+
+
+the false value is most suitable if you have an application with a small number of paths to pre-render and new pages are not added often. a blog site with a few articles is a good example for fallback set to false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? explain what happens when fallback is set to true
+??????QUESTION?????? change the code to fetch for 3 posts instead of the 100 posts, modify posts/index.js and [postId].js
+??????QUESTION?????? set fallback to true and make the necessary changes in [postId].js to support the fallback page which can simply be a Loading... text
+??????QUESTION?????? in the case a user enters an invalid url to post/postId, display the 404 page. build and run this in the browser
+??????QUESTION?????? in what scenarios would fallback true be most applicable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+when the value of getStaticPaths fallback is set to true:
+
+- the paths returned from getStaticPaths will be rendered to HTML at build time by getStaticProps
+- the paths that have not been generated at build time will not result in a 404. instead next.js will serve a fallback version of the page on the first request to such a path
+- in the background, next js will statically generate the requested path html and json. this includes running getStaticProps
+- when that's done, the browser receives the json for the generated path. this will be used to automatically render the page with the required props. from the user's perspective, the page will be swapped from the fallback page to the full page
+- at the same time, next.js keeps track of the new list of pre rendered pages. subsequent requests to the same path will serve the generated page just like other pages pre rendered at build time
+
+
+
+change the code to fetch for 3 posts instead of the 100 posts
+
+posts/index.js
+
+posts: response.data.slice(0,3)
+
+[postId].js
+
+getStaticPaths function
+
+    return{
+        paths: [
+            {params: {postId: "1"}},
+            {params: {postId: "2"}},
+            {params: {postId: "3"}}
+        ],
+        fallback: true
+    }
+
+
+we will also need to modify our post component to support fallback true
+
+import {useRouter} from "next/router";
+...
+
+    const router = useRouter()
+
+    if (router.isFallback){
+        return <h1>Loading...</h1>
+    }
+
+
+build and run the project
+
+
+
+the paths that have not been generated at build time will not result in a 404 page. instead next.js will serve a fallback version of the page on the first request to such a path
+
+
+our app now supports posts/1 - 3 and we don't see the loading text on the ui
+
+
+when we visit /posts/4, we see the loading text briefly then posts/4 is fetched from the api
+
+
+the loading text is our fallback page which we see instead of the 404 page on the initial request
+
+
+while this is shown, next.js in the background is statically generating the requested path html and json. this includes running getStaticProps which fetches and pre renders the 4th post
+
+
+when that's done, the browser receives the json for the generated path. this will be used to automatically render the page with the required props. from the user's perspective, the page will be swapped from the fallback page to the full page
+
+
+at the same time, next.js keeps track of the new list of pre rendered pages. subsequent requests to the same path will serve the generated page just like other pages pre rendered at build time
+
+
+in the case that a user makes a request to an invalid postId, we would want to return a 404 page instead which is so easy using next.js
+
+
+in getStaticProps, if our response isn't what we want we can return an object with a notfound property set to true. and if this is the case, next js will automatically render the 404 page
+
+export async function getStaticProps(context) {
+    const {params} = context
+
+    try {
+        const response = await axios.get(`https://jsonplaceholder.typicode.com/posts/${params.postId}`)
+
+        return{
+            props: {
+                post: response.data
+            }
+        }
+    } catch (e) {
+        return{
+            notFound: true
+        }
+    }
+}
+
+
+build and run again
+
+
+
+fallback set to true is most suitable if your app has a very large number of static pages that depend on data
+
+
+e.g. a large e-commerce site. you want all the product pages to be pre rendered but if you have a few thousand products, builds can take a really long time
+
+
+instead you may statically generate a small subset of products that are popular and use fallback true for the rest
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? what happens when we use fallback blocking
+??????QUESTION?????? update the code to use fallback blocking
+??????QUESTION?????? in what cases would you use fallback blocking
+??????QUESTION?????? which is the recommended fallback method in next.js
+
+
+
+
+
+
+
+
+
+
+
+
+fallback blocking is very similar to fallback true. the only difference is that instead of showing a fallback page, you will not see any new content in the ui while the page is being generated on the server
+
+
+- the paths returned from getStaticPaths will be rendered to html at build time by getStaticProps
+- the paths that have not been generated at build time will not result in a 404 page. instead on the first request, next.js will render the page on the server and return the generated html
+- from the user's perspective, it will transition from "the browser is requesting the page" to "the full page is loaded". there's no fallback stage
+- next.js keeps track of the new list of pre rendered pages. subsequent requests to the same path will serve the generated page just like the other pages pre rendered at build time
+
+
+
+we will then remove the useRouter and fallback code as we don't need it anymore
+
+
+rebuild and run the app again
+
+
+we will notice that when we go to a page that hasn't been pre-rendered yet, the loading time is quite significant. the browser also looks like it is loading (the refresh button is spinning). however, there's nothing to show in the ui as it transitions to the full page
+
+
+
+fallback "blocking" is used as on a ux level, sometimes people prefer the page to be loaded without a loading indicator if the wait time is a few milliseconds. this helps avoid the layout shift/ changes in the ui
+
+
+however, the technical reason that blocking was introduced was that some website crawlers did not support js. the loading page would be rendered and then the full page would be loaded which would cause a problem
+
+
+next.js recommends fallback true unless you see a problem with it in that case you would use "blocking"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? what are two common issues of static generation
+??????QUESTION?????? how can the issue of stale/ outdated data be solved
+??????QUESTION?????? what is ISR and how does it work
+??????QUESTION?????? use ISR for the getStaticProps function below
+export async function getStaticProps() {
+    const response = await axios.get("https://jsonplaceholder.typicode.com/posts")
+
+    return {
+        props: {
+            posts: response.data
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+getStaticProps for data fetching and getStaticPaths for dynamic pages seem like a really good approach to a wide variety of apps in production
+
+
+however, static generation comes with issues as well
+1. the build time is proportional to the number of pages in the application
+2. a page, once generated, can contain stale data till the time you rebuild the application again. stale data can occur in the case that some data was updated after build. the app will still be showing the old outdated version of the data until the next rebuild
+
+
+there was a need to update only those pages which needed a change without having to rebuild the entire app
+
+
+to solve this, next js introduced INCREMENTAL STATIC REGENERATION (ISR) which allows you to update static pages after you've built your application
+
+
+in order to use incremental static generation, in the getStaticProps return statement, apart from the props key, we can specify a revalidate key
+
+
+the value for revalidate is the number of seconds after which a page re-generation can occur
+
+    return {
+        props: {
+            posts: data
+        },
+        revalidate: 10
+    }
+
+
+when the revalidate time expires, when a user reaches the target url, they're still served the stale data however a regeneration happens in the background. when they access the same url again, they will be served by the new data page
+
+
+a re-generation is initiated only if a user  makes a request after the revalidate time
+
+
+revalidate doesn't mean that the page automatically re-generates every 10 seconds but the time after which a request initiates a re-generation
+
+
+the re-generation can also fail and the previously cached html could be served till the subsequent re-generations succeed
+
+
+this is a good pre rendering solution. however, there can be situations where we can't afford to serve stale data even for a second. this is why we use server side rendering
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? what are the issues of static generation
+??????QUESTION?????? install json-server, npm i json-server
+??????QUESTION?????? create a new file called db.json which will contain the code below
+ {
+   "news": [
+     {
+       "id": 1,
+       "title": "News Article 1",
+       "description": "Description 1",
+       "category": "sports"
+     },
+     {
+       "id": 2,
+       "title": "News Article 2",
+       "description": "Description 2",
+       "category": "politics"
+     },
+     {
+       "id": 3,
+       "title": "News Article 3",
+       "description": "Description 3",
+       "category": "sports"
+     }
+   ]
+ }
+??????QUESTION?????? add a start script to package.json "serve-json": "json-server --watch db.json --port 4000" and start the json-server in a new terminal window
+??????QUESTION?????? create a new route to /news which will display a list of news articles pre-rendered using SSR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////
+SERVER SIDE RENDERING
+////////////////////////////////////////
+
+
+
+this is the second form of pre rendering other than static generation
+
+
+as mentioned earlier, static generation pre-renders a page at build time (with exception to getStaticPaths which pre-renders on initial request and ISR which re-generates and pre-renders the pages when the validation time expires)
+
+
+we looked at the issues of static generation
+1. we cannot fetch data at request time and we can have stale data
+2. we don't get access to the incoming request. this becomes a problem when the data that needs to be fetched is specific to a user
+
+
+to overcome these problems, next js offers server side rendering (SSR) which pre-renders a page at request time and not at build time
+
+
+it also provides SEO capabilities which aren't possible in client side rendering
+
+
+we will assume that we're building a news website where we will display a list of news articles that we will fetch from an api (jsonserver)
+
+
+
+~ npm i jsonserver
+
+
+in project root, create a file called db.json and add the following code
+
+ {
+   "news": [
+     {
+       "id": 1,
+       "title": "News Article 1",
+       "description": "Description 1",
+       "category": "sports"
+     },
+     {
+       "id": 2,
+       "title": "News Article 2",
+       "description": "Description 2",
+       "category": "politics"
+     },
+     {
+       "id": 3,
+       "title": "News Article 3",
+       "description": "Description 3",
+       "category": "sports"
+     }
+   ]
+ }
+
+
+add a start script in package.json
+
+"serve-json": "json-server --watch db.json --port 4000"
+
+
+~ npm run serve-json
+
+
+we will now create the news list page which will use the SSR form of pre rendering
+
+
+in pages, create a new folder called news and inside it create a new file called index.js
+
+function NewsArticlesList() {
+    return(
+        <div>
+            <h1>List of News Articles</h1>
+        </div>
+    )
+}
+
+export default NewsArticlesList
+
+
+
+to prerender using ssr, we export an async function called getServerSideProps. this will be called by the server on every request
+
+
+inside this function, we can fetch external data and send it as props to the component
+
+export async function getServerSideProps() {
+    const response = await axios.get("http://localhost:4000/news")
+
+    return {
+        props: {
+            articles: response.data
+        }
+    }
+}
+
+
+
+we will then get articles passed in as props in our component and map over the articles to print them on the screen
+
+    <div>
+        <h1>List of News Articles</h1>
+        {articles.map(article => {
+            return(
+                <div key={article.id}>
+                    <h2>{article.id} {article.title} | {article.category}</h2>
+                </div>
+            )
+        })}
+    </div>
+
+
+this form of pre rendering is slower than static generation as the server must compute every request and because of this only use SSR when absolutely necessary
+
+notes on getServerSideProps
+
+1. getServerProps only runs server side and code won't be included in the js bundle
+
+2. we can also write server side code like accessing the file system in server side code
+
+3. get server side prop is only allowed in a page and can't be run from a regular component
+
+4. should return an object with property props which will be an object containing data we want to pass to the component
+
+5. getServerSideProps will run at request time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

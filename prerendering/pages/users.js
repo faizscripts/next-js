@@ -1,4 +1,5 @@
 import axios from "axios";
+import User from "../components/user";
 
 const UsersList = ({users}) => {
     return(
@@ -8,11 +9,11 @@ const UsersList = ({users}) => {
                 user => {
                     return(
                         <div key={user.id}>
-                            <p>{user.name}</p>
-                            <p>{user.email}</p>
+                            <User user={user} />
                         </div>
-                    )
-            })}
+                        )
+                }
+            )}
         </>
     )
 }
@@ -21,7 +22,6 @@ export default UsersList
 
 export async function getStaticProps() {
     const response = await axios.get("https://jsonplaceholder.typicode.com/users")
-    console.log(response.data);
     return{
         props:{
             users: response.data
