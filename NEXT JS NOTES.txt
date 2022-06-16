@@ -2133,6 +2133,413 @@ we could have also used dynamic routing to handle this category filter. however 
 
 
 
+??????QUESTION?????? create a new project called api and do the necessary clean up
+??????QUESTION?????? in project root, create a folder called data, inside it create comments.js and paste the code below
+export const comments = [
+  {
+    id: 1,
+    text: 'This is the first comment'
+  },
+  {
+    id: 2,
+    text: 'This is the second comment'
+  },
+  {
+    id: 3,
+    text: 'This is the third comment'
+  }
+]
+??????QUESTION?????? create an api endpoint called comments which returns the array of comments above in json
+??????QUESTION?????? create a route to /comments which contains a button called Load comments. when this button is click, it should fetch the comments and render them on the screen
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////
+API ROUTES
+///////////////////////////////////////////
+
+
+next.js is a full stack framework. you can write FE code in react and also write APIs that can be called by the FE code
+
+
+API routes allow you to create RESTful endpoints as part of your next.js application folder structure
+
+
+within the pages folder, you need to create a folder called api where you'll store all the apis for your application
+
+
+next.js gives you everything you need to write full stack react + node applications
+
+
+create a new project called api
+
+in styles delete home, in pages delete api and index
+
+
+in pages create a folder called api and inside it create index.js
+
+
+for this api to work, we need to export a function as default and the convention is to call that function handler since it handles the incoming request
+
+
+this function automatically receives two parameters, req and res which are standard node js objects
+
+export default function handler(req, res) {
+    res.status(200).json({name: "Home API route"})
+}
+
+
+run the project in dev mode
+
+
+in the browser, navigate to /api, we get back the json response
+
+{"name":"Home API route"}
+
+
+we will now look at how to make GET requests with API routes
+
+
+in the project root folder, create a folder called data and inside it create a file called comments.js which will contain the code below
+
+export const comments = [
+  {
+    id: 1,
+    text: 'This is the first comment'
+  },
+  {
+    id: 2,
+    text: 'This is the second comment'
+  },
+  {
+    id: 3,
+    text: 'This is the third comment'
+  }
+]
+
+
+
+we're then going to create an api endpoint that serves these comments
+
+
+in api folder, create a new folder called comments and inside it create an index.js
+
+import {comments} from "../../../data/comments";
+
+export default function handler (req, res) {
+    res.status(200).json(comments)
+}
+
+
+we will now create a page that loads this data on click of a button
+
+
+in pages, create a new folder called comments and inside it create index.js
+
+
+it will contain a button which when clicked load the comments from the comments api, updates a piece of state and causes a rerender
+
+import {useState} from "react";
+import axios from "axios";
+
+function Comments() {
+
+    const [comments, setComments] = useState([])
+
+    const fetchComments = async () => {
+        const response = await axios.get("/api/comments")
+        setComments(response.data)
+    }
+
+    return(
+        <div>
+            <button onClick={fetchComments}>Load comments</button>
+            {comments.map(comment => {
+                return(
+                    <div key={comment.id}>
+                        {comment.id} {comment.text}
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
+export default Comments
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create an input field an a button which when clicked adds the input to our comments array
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at how to make post request to our api endpoint
+
+
+for our example, we're going to allow a user to submit a comment which will get stored in the comments array we have in the data folder
+
+
+in the comments page, we're going to allow a user to type in a comment and submit it
+
+
+we will create a new piece of state called comment
+
+const [comment, setComment] = useState("")
+
+in the jsx, we're going to add an input field and a button
+
+    <input type="text" value={comment} onChange={event => setComment(event.target.value)} />
+    <button onClick={onCommentSubmit} >Submit Comment</button>
+
+and this is our onCommentSubmit function
+
+    const onCommentSubmit = async () => {
+        await axios.post('/api/comments', {
+            text: comment
+        })
+    }
+
+
+we then need to handle our post request in our api route /api/comments/index
+
+
+we will need to update our code to support the different requests
+
+
+we can access the data passed from the form in comments api using req.body.namePassed, in our case, we passed the name as text so req.body.text
+
+
+we will add an id to this comment text to match the others then push it to the comments array
+
+
+export default function handler (req, res) {
+    if (req.method === "GET"){
+        res.status(200).json(comments)
+    } else if (req.method === "POST"){
+        const text = req.body.text
+        const comment = {
+            id: Date.now(),
+            text: text
+        }
+        comments.push(comment)
+        res.status(201).json(comments)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a dynamic api route that will fetch a specific content when a user opens /api/comments/1. this should show the first comment and it should work for other comments as well
+??????QUESTION?????? create a delete button for all comments
+??????QUESTION?????? what is the syntax for catch all and optional catch all route
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at how to handle a delete request which is slightly different in the sense that you need to specify the id of the comment you want to delete
+
+
+/api/comments will handle get and post requests
+
+
+we can use /api/comments/[commentId] to get access to a single comment based on the id and subsequently use this to handle the delete request
+
+
+create [commentId].js in /api/comments
+
+
+in this handler, we can extract the id from req.query and find it our comments array in data
+
+
+export default (req, res) => {
+    const {commentId} = req.query
+    const comment = comments.find(comment => comment.id === parseInt(commentId))
+    res.status(200).json(comment)
+}
+
+
+
+we will now look at how to implement the delete request. each of the comments will have a delete button which when clicked, will delete the comment from the array
+
+
+    <div key={comment.id}>
+        {comment.id} {comment.text}
+        <button onClick={() => deleteComment(comment.id)} >Delete</button>
+    </div>
+
+    in deleteComment, we will call fetchComments so that it can load the new comments again
+
+    const deleteComment = async(commentId) => {
+        await axios.delete(`/api/comments/${commentId}`)
+
+        fetchComments()
+    }
+
+
+in [commentId] api route, we will check for the delete request method
+
+export default (req, res) => {
+    const {commentId} = req.query
+    const comment = comments.find(comment => comment.id === parseInt(commentId))
+
+    if (req.method === "GET"){
+        res.status(200).json(comment)
+    } else if (req.method === "DELETE"){
+        const index = comments.findIndex(comment => comment.id === parseInt(commentId))
+        comments.splice(index, 1)
+        res.status(200).json(comment)
+    }
+}
+
+
+
+
+
+it is also possible to have a catch all API routes which is similar to the catch all for pages
+
+
+[...params].js catch all
+
+[[...params]].js is an optional catch all route
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a statically generated page for the comment details page
+
+
+
+
+
+
+
+
+
+
+
+
+we will create a statically generated page for our comment details page /comments/[commentId]
+
+
+it is not advised to call your api routes within getStaticProps and getServerSideProps. it introduces and additional round trip which isn't necessary
+
+
+for this reason, we will simply import our comments array from data folder
+
+
+import {comments} from "../../data/comments";
+
+const CommentDetails = ({comment}) => {
+    return (
+        <div>
+            <h2>
+                {comment.id} {comment.text}
+            </h2>
+        </div>
+    )
+}
+
+export default CommentDetails
+
+export async function getStaticPaths() {
+    return{
+        paths: [
+            {params: {commentId: "1"}},
+            {params: {commentId: "2"}},
+            {params: {commentId: "3"}}
+        ],
+        fallback: false
+    }
+}
+
+export async function getStaticProps(context) {
+    const {params} = context
+    const {commentId} = params
+
+    const comment = comments.find(comment => comment.id === parseInt(commentId))
+
+    return {
+        props: {
+            comment
+        }
+    }
+}
+
+
+
+
+
+
+
 
 
 
