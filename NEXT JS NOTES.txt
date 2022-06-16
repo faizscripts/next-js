@@ -1433,7 +1433,7 @@ SERVER SIDE RENDERING
 
 
 
-this is the second form of pre rendering other than static generation
+SSR is the second form of pre rendering other than static generation
 
 
 as mentioned earlier, static generation pre-renders a page at build time (with exception to getStaticPaths which pre-renders on initial request and ISR which re-generates and pre-renders the pages when the validation time expires)
@@ -1552,6 +1552,574 @@ notes on getServerSideProps
 4. should return an object with property props which will be an object containing data we want to pass to the component
 
 5. getServerSideProps will run at request time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a page that filters news articles by the category passed in the url e.g /news/sports should show all sports articles
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at how to SSR with dynamic parameters
+
+
+we want a page that filters news articles by category
+
+
+we will create a route /news/category where category will be a specific category passed in the url and it will display only articles matching that category e.g. /news/sports will display article 1 and 3
+
+
+in the news folder create [category].js
+
+
+to fetch the filtered articles, we will need getServerSideProps
+
+
+also not that if we query http://localhost:4000/news?category=sports to our json server, it will only return sports articles only
+
+
+knowing this, we can extract the [category] passed in the url and query the searched term in our json server. this is done in the same way as getStaticProps where the first argument by convention called context in our function contains a params key with all the parameters in our url
+
+
+in our return function, we will also pass category as a prop
+
+import axios from "axios";
+
+function ArticlesByCategory({articles, category}) {
+    return(
+        <div>
+            <h1>List of {category} articles</h1>
+            {articles.map(article => {
+                return(
+                    <div key={article.id}>
+                        <h2>{article.id} {article.title}</h2>
+                        <p>{article.description}</p>
+                        <hr/>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
+export default ArticlesByCategory
+
+export async function getServerSideProps(context) {
+    const {params} = context
+    const {category} = params
+    const response = await axios.get(`http://localhost:4000/news?category=${category}`)
+
+    return{
+        props: {
+            articles: response.data,
+            category
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? what are some of the other useful objects we can get from the context object in getServerSideProps
+??????QUESTION?????? build the project and run. what are the differences between static generation and server side rendering
+
+
+
+
+
+
+
+
+
+
+we had mentioned earlier that one of the limitations of static generation is that you dont get access to the incoming request which can affect you for example in fetching data that is user specific
+
+
+we can achieve this in SSR as these are passed into the context object in getServerSideProps where apart from params we also get req and res
+
+
+req is a standard http incoming message object and res is a standard http response object (like express.js)
+
+
+another useful object we get from context is the query object which gives us access to the query string
+
+
+we will now inspect the build output in SSR
+
+~ npm run build
+
+our SSR pages will get the λ symbol
+
+also not that in SSR, html pages are not generated at build time. if we inspect .next/server/news,  we won't find any html pages
+
+
+~ npm start
+
+
+if we visit a page, it will be pre-rendered on request and even after this the html file is not generated in the server folder as the pages are generated on request
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? add the following code to db.json
+??????QUESTION?????? create a route to /dashboard which will do client side rendering to display posts, likes, followers and following from db.json. Display a loading text in the case data hasn't been fetched yet i.e. when it is fetching
+
+
+
+
+
+
+
+
+
+
+we will now look at client side data fetching
+
+
+when building an application, you might not always need to pre-render data e.g. a dashboard page which is behind a login screen so no need of SEO and is highly user specific
+
+
+add the following code to our db.json
+
+ "dashboard": {
+    "posts": 5,
+    "likes": 100,
+    "followers": 20,
+    "following": 50
+  }
+
+fetching data on client side is going to be exactly the same as in react
+
+
+in pages, create dashboard.js
+
+
+import {useState, useEffect} from "react";
+import axios from "axios";
+
+function Dashboard() {
+    const [loading, setLoading] = useState(true)
+    const [dashboardData, setDashboardData] = useState(null)
+
+    useEffect(() => {
+        fetchDashboardData()
+    }, [])
+
+    const fetchDashboardData = async () => {
+        const response = await axios.get("http://localhost:4000/dashboard")
+
+        setDashboardData(response.data)
+        setLoading(false)
+    }
+
+    if (loading) {
+        return <h1>Loading....</h1>
+    }
+
+    const {posts, likes, followers, following} = dashboardData
+
+    return (
+        <div>
+            <h1>Dashboard</h1>
+            <h2>Posts - {posts}</h2>
+            <h2>Likes - {likes}</h2>
+            <h2>Followers - {followers}</h2>
+            <h2>Following - {following}</h2>
+        </div>
+    )
+}
+
+export default Dashboard
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a new route /dashboard-swr and perform data fetching using swr
+??????QUESTION?????? what are some of the advantages of using swr?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+so far we have been using axios to perform our data fetching. the next.js developers created SWR for client side data fetching
+
+
+SWR stands for Stale While Revalidate which is basically a react hook for data fetching
+
+
+it handles caching, revalidation, focus tracking, refetching on intervals and a lot more
+
+
+in the terminal, run
+~ npm add swr
+
+
+in pages, create dashboard-swr.js
+
+
+the first argument is a unique key for the request, the second argument is a function where we fetch the data and return it. it a common practise to call this function fetcher
+
+
+this hook returns data and error which we can destructure
+
+import useSWR from "swr"
+import axios from "axios";
+
+function DashboardSWR() {
+    const fetcher = async () => {
+        const response = await axios.get("http://localhost:4000/dashboard")
+        return response.data
+    }
+
+    const {data, error} = useSWR('dashboard', fetcher)
+
+    if (error) return <h1>An error occured!</h1>
+    if (!data) return <h1>Loading...</h1>
+
+    const {posts, likes, followers, following} = data
+
+    return (
+        <div>
+            <h1>Dashboard</h1>
+            <h2>Posts - {posts}</h2>
+            <h2>Likes - {likes}</h2>
+            <h2>Followers - {followers}</h2>
+            <h2>Following - {following}</h2>
+        </div>
+    )
+}
+
+export default DashboardSWR
+
+
+
+
+if we run this in the browser /dashboard-swr
+
+
+data fetching with swr is much simpler than axios, useState and useEffect hooks. the code is much cleaner
+
+
+also if we change something in db.json e.g. likes to 150, on /dashboard, we have to refresh the page for changes to take place. however, in /dashboard-swr, it automatically fetches the new data without needing to refresh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? follow the instructions below
+
+
+
+
+
+
+
+
+
+we will now look at how to combine pre rendering and client side data fetching
+
+
+for this, we're going to build an event listing page which shows a list of events happening around a user
+
+
+since we want SEO and request time data fetching, we will use SSR with getServerSideProps
+
+
+once the events have been loaded, we're going to use client side data fetching for filtering events
+
+
+ideally, both pagination and filtering would be done on client side but for this example we're only going to focus on filtering
+
+
+add the following code to db.json
+
+"events": [
+    {
+      "id": 1,
+      "title": "Event 1",
+      "description": "Description 1",
+      "category": "sports",
+      "date": "April 25"
+    },
+    {
+      "id": 2,
+      "title": "Event 2",
+      "description": "Description 2",
+      "category": "technology",
+      "date": "May 25"
+    },
+    {
+      "id": 3,
+      "title": "Event 3",
+      "description": "Description 3",
+      "category": "food",
+      "date": "October 25"
+    },
+    {
+      "id": 4,
+      "title": "Event 4",
+      "description": "Description 4",
+      "category": "food",
+      "date": "April 25"
+    },
+    {
+      "id": 5,
+      "title": "Event 5",
+      "description": "Description 5",
+      "category": "sports",
+      "date": "January 15"
+    },
+    {
+      "id": 6,
+      "title": "Event 6",
+      "description": "Description 6",
+      "category": "art",
+      "date": "April 25"
+    },
+    {
+      "id": 7,
+      "title": "Event 7",
+      "description": "Description 7",
+      "category": "technology",
+      "date": "June 25"
+    },
+    {
+      "id": 8,
+      "title": "Event 8",
+      "description": "Description 8",
+      "category": "sports",
+      "date": "February 28"
+    },
+    {
+      "id": 9,
+      "title": "Event 9",
+      "description": "Description 9",
+      "category": "food",
+      "date": "April 25"
+    },
+    {
+      "id": 10,
+      "title": "Event 10",
+      "description": "Description 10",
+      "category": "sports",
+      "date": "August 5"
+    }
+  ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? in pages, create events.js which will fetch a list of all the events using SSR. map through this list and print the id, title, date, category, description for each event
+??????QUESTION?????? create a button at the top of the page which filters only events with the category sport. use client side data fetching and filtering using query parameters for this. also make sure the url updates to /events?category=sports when the button is clicked
+
+
+
+
+
+
+
+
+
+
+
+
+
+in pages, create events.js
+
+
+this will display all the events and the first task will be to fetch data required for server side rendering
+
+export async function getServerSideProps() {
+    const response = await axios.get("http://localhost:4000/events")
+
+    return{
+        props: {
+            events: response.data
+        }
+    }
+}
+
+
+we will then map through the events array
+
+    <div>
+        <h1>List of events</h1>
+        {events.map(event => {
+            const {id, title, date, category, description} = event
+            return(
+                <div key={id}>
+                    <h2>
+                        {id} {title} {date} | {category}
+                    </h2>
+                    <p>{description}</p>
+                </div>
+            )
+        })}
+    </div>
+
+
+after we have rendered the list, we want to allow the user to filter the events based on the category
+
+
+ideally we would have a navbar which a user would select the category they want to filter but to keep things simple we will only use one button which filters sports category
+
+
+we will create this button after the root div
+
+<div>
+    <button onClick={fetchSportsEvents}>Sports Events</button>
+    <h1>List of events</h1>
+
+
+within this function, we will fetch the list of filtered events. after filtering this data, we will store it in a state variable to make the component rerender
+
+    const [stateEvents, setStateEvents] = useState(events)
+
+    const fetchSportsEvents = async () => {
+        const response = await axios.get("http://localhost:4000/events?category=sports")
+        setStateEvents(response.data)
+    }
+
+we will then replace the rendered map to use stateEvents and not the props event
+
+
+this works well, however the url doesn't update therefore we can't share this nor bookmark it
+
+
+we can use this by using shallow routing which updates the url in the browser without running the code inside getServerSideProps
+
+
+for this, we need to make a couple of changes
+
+
+inside getServerSideProps, we will check if the category parameter is present
+
+export async function getServerSideProps(context) {
+    const {query} = context
+    const {category} = query
+    const queryString = category ? "category=sports" : ""
+    const response = await axios.get(`http://localhost:4000/events?${queryString}`)
+
+    return{
+        props: {
+            events: response.data
+        }
+    }
+}
+
+
+
+in the fetchSportsEvent handler, we need to push the category filter in the browser url using useRouter
+
+
+in the push the second argument is going to be undefined as it is not necessary here and the 3rd argument we will set shallow routing to true
+
+    const fetchSportsEvents = async () => {
+        const response = await axios.get("http://localhost:4000/events?category=sports")
+        setStateEvents(response.data)
+        router.push("/events?category=sports", undefined, {shallow: true})
+    }
+
+
+
+
+
+
+
+points to note
+
+we're not using array.filter in the pre rendered list of events because in a real world app with a huge list of events, we only pre-render some events. we need to refetch and filter from the list of all the existing events
+
+
+we could have also used dynamic routing to handle this category filter. however when the filters are many e.g. in a site like amazon, filtering using client side data fetching and shallow routing is much simpler
+
+
+
+
 
 
 
