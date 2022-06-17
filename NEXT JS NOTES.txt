@@ -2547,6 +2547,282 @@ export async function getStaticProps(context) {
 
 
 
+??????QUESTION?????? create a new next project called styling. don't delete any file!
+??????QUESTION?????? create a route to about which displays and h2 saying about page
+??????QUESTION?????? add a global style to make all h2 tags green
+??????QUESTION?????? add bootstrap to your project and in about page create a primary button
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////
+STYLING
+/////////////////////////////////////////////
+
+
+we're going to look at
+
+1. global styles
+2. component styles
+3. SASS or SCSS
+4. css-in-js solution
+
+
+create a new project called styling
+
+create-next-app gives us most of the global styles that we require
+
+
+inside styles folder, there is a global.css file which contain some basic stylings necessary for our app
+
+
+this file is imported in _app.js
+
+
+this is key to note as in order to create global stylings, we need to import it in _app.js inside pages
+
+
+apart from writing your own styles, you may also have a need to import a stylesheet from another library e.g. bootstrap
+
+
+we will first need to npm install bootstrap to our project. the command for the current latest version is
+
+~ npm i bootstrap@5.2.0-beta1
+
+
+we will then import the css file
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+Importing JS is not easy as CSS. If we directly import JS like CSS we will run into error which would say window and document is not defined. This is because window and document are client side objects, while Next.js renders HTML on Client side as well as server side. Hence to avoid such errors we will dynamically import JS using useEffect() hook.
+
+function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    import("bootstrap/dist/js/bootstrap.min");
+  }, [])
+  return <Component {...pageProps} />
+}
+
+
+to test this, we will create an about page where we will create a bootstrap button. the bootstrap styling should show
+
+    <button className="btn btn-primary">About page</button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create a component level stylesheet for the about page which contains a container that turns the background to red. use this to make the background of the about page red
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at component level styling
+
+
+next js supports css modules (locally scoped css) using a filename.module.css naming convention
+
+
+in the styles folder, we can see a file name Home.modules.css these styles only apply to the root index.js page
+
+
+in order to use these classes, we import them in the js file that we want to use
+
+
+Home.modules.css has a class container, in order to access this we will use the format below
+
+
+import styles from '../styles/Home.module.css'
+...
+<div className={styles.container}>
+
+
+
+we will now create a component level stylesheet for the about page which contains a container that turns the background to red
+
+
+in styles create About.module.css
+
+.container{
+    background-color: red;
+}
+
+
+pages/about.js
+
+import styles from "../styles/About.module.css"
+
+function About() {
+    return(
+        <div className={styles.container}>
+            <button className="btn btn-primary">About page</button>
+        </div>
+    )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? change the background color of the about page to purple using scss
+??????QUESTION?????? in about, create an h3 tag and use inline styling to make its text color blue
+
+
+
+
+
+
+
+
+
+
+
+
+next js also supports SASS/SCSS
+
+
+the first thing is to install sass
+
+~ npm i sass
+
+
+in styles create a partial _colors.scss where we will define the colors for our app
+
+
+$orange: orange;
+
+
+in styles also create About.module.scss where we will import colors attempt to create a new class for the background color
+
+@import "colors";
+
+.containerscss{
+  background-color: $orange;
+}
+
+
+
+/pages/about
+
+import styles from "../styles/About.module.scss"
+
+function About() {
+    return(
+        <div className={styles.containerscss}>
+            <button className="btn btn-primary">About page</button>
+        </div>
+    )
+}
+
+
+
+we will now look at css in js. the simplest for of css in js is inline styling in a component jsx
+
+
+about.js
+
+
+<h3 style={{color: "blue"}}>Inline styling</h3>
+
+
+although inline styling work, they're not the go to approach. you might prefer something like styled-components or emotion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
