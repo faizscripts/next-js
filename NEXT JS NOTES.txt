@@ -2775,6 +2775,585 @@ although inline styling work, they're not the go to approach. you might prefer s
 
 
 
+??????QUESTION?????? create a new next app called misc
+??????QUESTION?????? create a layout page which will be shown by default on all pages. the layout page should be a simple header with the text Header and with the root div having a class header and the footer should have a text footer with the root div having a class footer whose css values are as below
+.header {
+  background-color: #264653;
+  color: #f4a261;
+  font-size: 30px;
+  text-align: center;
+  padding: 30px;
+}
+
+.footer {
+  background-color: #264653;
+  color: #e9c46a;
+  font-size: 30px;
+  text-align: center;
+  padding: 20px;
+}
+??????QUESTION?????? create an about page which will only have a footer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////
+MISCELLANEOUS
+/////////////////////////////////////
+
+
+in this section we will cover the small important details of next js
+
+
+- app layout
+- head component
+- img component
+- absolute imports and module paths
+- static html export
+- configure support for typescript
+- preview feature
+- next config file
+- redirects
+- environment variables
+
+
+
+
+
+
+
+
+
+when we're building an application, it is common to have a define layout which we will use for all of our pages
+
+
+
+the recommended way to define the app layout in next.js is in _app.js
+
+
+create a new next.js app called misc
+
+
+
+our layout will contain a header and footer. we will start by creating these components
+
+
+in project root, create a new folder called components, another folder called layout and inside it create Header.js
+
+function Header() {
+    return(
+        <div className="header">
+            Header
+        </div>
+    )
+}
+
+
+create a new file called Footer.js
+
+function Footer() {
+    return(
+        <div className="footer">
+            Footer
+        </div>
+    )
+}
+
+
+
+inside styles, create a file called layout.css
+
+
+.header {
+  background-color: #264653;
+  color: #f4a261;
+  font-size: 30px;
+  text-align: center;
+  padding: 30px;
+}
+
+.footer {
+  background-color: #264653;
+  color: #e9c46a;
+  font-size: 30px;
+  text-align: center;
+  padding: 20px;
+}
+
+
+
+we will then go to _app.js to define the layout
+
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import '../styles/globals.css'
+import '../styles/layout.css'
+
+function MyApp({ Component, pageProps }) {
+  return (
+      <>
+        <Header />
+        <Component {...pageProps} />
+        <Footer />
+      </>
+  )
+}
+
+
+
+our layout will now be applied to all the pages in our app
+
+
+we might want to have exceptions like the sign in and sign out page not to have the header and the footer
+
+
+
+to test this we will create an about page which will only have a footer
+
+import Footer from "../components/layout/Footer";
+
+function About() {
+    return (
+        <h3>About page</h3>
+    )
+}
+
+export default About
+
+About.getLayout = function PageLayout(page) {
+    return (
+        <>
+            {page}
+            <Footer/>
+        </>
+    )
+}
+
+
+
+
+to use this getLayout function, we will modify _app.js
+
+
+function MyApp({Component, pageProps}) {
+
+    if (Component.getLayout){
+        return Component.getLayout(<Component {...pageProps} />)
+    }
+
+    return (
+        <>
+            <Header/>
+            <Component {...pageProps} />
+            <Footer/>
+        </>
+    )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? add a default title and description to the project and test it out on the browser
+??????QUESTION?????? for the about page, create a custom title and description
+
+
+
+
+
+
+
+
+
+
+
+we will now have a look at the Head component provided by next.js
+
+
+we will use this to add a title and description to our html pages
+
+
+the Head components helps you dynamically manage a documents head section
+
+
+we will add a title and description to our about page
+
+
+function About() {
+    return (
+        <>
+            <Head>
+                <title>About page</title>
+                <meta name="description" content="A next js about page" />
+            </Head>
+            <h3>About page</h3>
+        </>
+    )
+}
+
+
+
+
+
+specifying head tags in all pages can be hectic. we can specify it once in _app.js and the same would be applied to every page that doesn't define a similar head component
+
+
+_app.js
+
+        <>
+            <Head>
+                <title>Faiz Ahmed</title>
+                <meta name="description" content="A fullstack developer" />
+            </Head>
+            <Header/>
+            <Component {...pageProps} />
+            <Footer/>
+        </>
+
+
+next js will also merge the Head component from _app.js and for the individual component in the case where the tags are different with the component head tag having more priority
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? download 5 pet images from unsplash and paste them in the public folder
+??????QUESTION?????? create a pets page and use next js Image component to render the 5 images using a blur image while the image is loading
+
+
+
+
+
+
+
+
+
+
+
+
+
+it is pretty common for a website to have images
+
+
+the size and type of image plays an important role in the app performance
+
+
+next.js provides and image component to optimize this
+
+
+download 5 pet images from unsplash and add them to the public folder naming them 1-5.jpg
+
+
+in pages, create a new file called pets.js which will be a simple component to render a list of 5 images
+
+    <div>
+        {['1', '2', '3', '4', '5'].map(path => {
+            return(
+                <div key={path}>
+                    <img src={`/${path}.jpg`} alt="pet" width="280" height="420" />
+                </div>
+            )
+        })}
+    </div>
+
+
+
+
+if we run this in the browser and open the network tab, we will notice that the size of the images are quite large
+
+
+
+this is highly optimized when we use the image component from next js
+
+
+import Image from "next/image";
+
+
+simply replace the img tag with the Image component, all the attributes remain the same
+
+
+    <Image src={`/${path}.jpg`} alt="pet" width="280" height="420" />
+
+
+Advantages of the Image component
+
+1. it significantly reduces the image sizes and also converts the image to webp which is the optimized format for images in browsers
+
+2. provides lazy loading where it only loads images in or close to the viewport
+
+3. the ability to render a placeholder image while the actual image is still loading. by simply specifying a prop, we can render a blurred image of the actual image while it is still loading.
+however for this, the path needs to be static.
+for this we're going to use a separate image in image 1 which we will have to import first to make it static
+
+import image1 from "../public/1.jpg"
+
+    <Image src={image1} placeholder="blur" alt="pet" width="280" height="420" />
+
+in order to use it with dynamic images, we need to use another prop, blurDataURL which points to an image that will be used to render the placeholder
+
+    <Image src={`/${path}.jpg`} placeholder="blur" blurDataURL={`/${path}.jpg`} alt="pet" width="280" height="420" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? check the notes below on absolute imports
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at absolute imports and module paths
+
+
+relative imports are imports which uses a path relative to the current file e.g.
+import Footer from "../components/layout/Footer";
+import '../styles/globals.css'
+
+
+this is fine but you might prefer absolute paths especially when importing from nested folders, the ../.. syntax isn't the most pleasing to look at
+
+
+next js makes it easy for us to define module path aliases and make use of absolute imports which use absolute paths
+
+
+in the project root, create a new js config file named jsconfig.json
+
+
+{
+  "compilerOptions": {
+    "baseUrl": "."  //set to the current folder i.e the root. this allows us to use absolute imports
+  }
+}
+
+
+with this, instead of referencing relative from the file, we start at the project root
+
+import Footer from "../components/layout/Footer"; becomes
+import Footer from "components/layout/Footer";
+
+
+we can also define other aliases
+
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/layout/*": ["components/layout/*"]
+    }
+  }
+}
+
+
+
+this means instead of writing components/layout/*, we can use @/layout/*
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? export your project into static html
+
+
+
+
+
+
+
+
+
+
+we will now look at exporting our next js application into static html
+
+
+npm run build   - builds the application for production in the .next folder
+
+npm start   - starts a node.js server that supports hybrid pages, serving both statically generated and server side rendered pages
+
+npm run export - exports all your pages to static html files that you can serve without the need of a node  js server similar to what create react app does
+
+
+the only implication of exporting is that you can't use ISR nor SSR
+
+
+however, these apps are still reactive and you can rely on client side data fetching for dynamic content
+
+
+a good example for using next export is landing pages, blogs and any app where the content is generated at build time
+
+
+
+
+the first step to export is to add an export script to package.json
+
+"export": "next build && next export",
+
+
+however when we run the export command, we get an error Image Optimization using Next.js' default loader is not compatible with `next export`
+
+
+to fix this, in pets.js we will remove the Image component and in index.js as well
+
+
+lets rerun the export again
+
+
+the files will be written to a folder called out in the project root which will contain all the html and the pulic resources necessary to run the application
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? read the notes below on preview mode
+
+
+
+
+
+
+
+
+
+
+
+
+we will have a look at the preview mode feature that next.js offers
+
+
+the preview mode is build specifically to help applications that rely on a CMS
+
+
+in the pre rendering section, we learnt about static generation where pages are pre rendered at build time. this is pretty useful when your pages fetch data from a CMS
+
+
+however, it's not suitable when your creating a draft in your cms and you want to preview the draft changes immediately on your page. you want next.js to bypass static generation for this scenario
+
+
+you deploy your app and then when you make changes in your cms, they wont be reflected as pages are only generated when you build the application. for this reason, there was a need to handle this scenario of 'Preview of Publish'
+
+
+in pages, create a news folder and inside it index.js
+
+function News({data}) {
+    return <h1>{data}</h1>
+}
+
+export default News
+
+export async function getStaticProps() {
+    return{
+        props:{
+            data: 'List of published articles'
+        }
+    }
+}
+
+
+
+to implement the preview feature, we need to create a file in the api folder. we will call it preview.js where we will implement a basic handler function
+
+
+setPreviewData function accepts an object which we can use to pass key value pairs to getStaticProps and getServerSideProps. for now we will just leave it as blank. (use context.previewData -to access this in getStatic props)
+
+
+we can verify that the preview mode is enabled by inspecting the cookies in the browser when we visit /api/preview. we will see next preview data cookie and prerender bypass cookie which will be available on every request
+
+after setting the preview mode, we will redirect the user to the appropriate route
+
+export default function handler(req, res) {
+    res.setPreviewData({})
+    res.redirect(req.query.redirect)
+}
+
+
+
+
+now when we visit /api/preview?redirect=/news, we set the preview mode and then we'll be redirected to the news route
+
+
+with the preview mode cookies being set, the second step is to update getStaticProps
+
+
+when preview mode is set, the context object in getStaticProps gets the key preview (i.e. context.preview) is set to true
+
+
+we can use this to fetch different data from our cms
+
+    data: context.preview ? 'List of draft articles' : 'List of published articles'
+
+
+the main point to take here is that getStaticProps will run on every request instead of running only during build time even after when the application has been build and deployed
+
+
+what this allows is for you to constantly make updates in the cms and immediately view those changes in the browser as you don't have to rebuild the entire application
+
+
+
+to stop the preview mode, next js provides the clearPreviewData on the res object which clear the preview cookies
+
+
+in the api folder, create another file called disable-preview.js
+
+export default function handler(req, res) {
+    res.clearPreviewData()
+    res.end('Preview mode disabled')
+}
 
 
 
@@ -2794,6 +3373,7 @@ although inline styling work, they're not the go to approach. you might prefer s
 
 
 
+??????QUESTION?????? create a redirect such that a user is taken to the home page when they visit the about page
 
 
 
@@ -2806,6 +3386,107 @@ although inline styling work, they're not the go to approach. you might prefer s
 
 
 
+
+we will look at how to configure redirects in our app
+
+
+redirects are useful when we're re-organizing our website and the urls have changed or perhaps the site is undergoing maintenance and you want to temporarily redirect users to a different page
+
+
+open next.config.js in root and add a redirects key whose value is an async function which returns an array of objects. each object in the array corresponds to a redirect
+
+const nextConfig = {
+  reactStrictMode: true,
+  redirects: async () => {
+    return [
+      {
+        source: '/about',
+        destination: '/',
+        permanent: true
+      }
+    ]
+  }
+}
+
+
+
+restart the server in the terminal to see the changes in effect
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? create DB_USER and DB_PASSWORD environment variables. create ID which is a public environment variable
+??????QUESTION?????? create a route to /db which prints out the ID environment variable on the screen and DB_USER and DB_PASS on the server console
+
+
+
+
+
+
+
+
+
+
+
+
+environment variables protects important information by not bundling them with the code that is shipped to the browser
+
+
+next js comes with built in support for environment variables
+
+
+create a new file in the projects root folder. the file name HAS to be .env.local which is automatically git ignored
+
+
+DB_USER = Faiz
+DB_PASSWORD = Password
+
+
+to access environment variables, we use process.env
+
+
+create a new route called db.js
+
+function DB() {
+    return <h1>DB Page</h1>
+}
+
+export default DB
+
+export async function getStaticProps() {
+    const user = process.env.DB_USER
+    const password = process.env.DB_PASSWORD
+    console.log(`username is ${user} and password is ${password}`)
+    return{
+        props:{
+
+        }
+    }
+}
+
+
+
+
+
+these environment variables are only available in the browser. if you want to expose environment variables you have to prefix it with NEXT_PUBLIC
+
+NEXT_PUBLIC_ID = 123
+
+we can print this on the screen
+
+return <h1>DB Page {process.env.NEXT_PUBLIC_ID}</h1>
 
 
 
