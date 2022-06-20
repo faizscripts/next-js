@@ -3501,6 +3501,7 @@ return <h1>DB Page {process.env.NEXT_PUBLIC_ID}</h1>
 
 
 
+??????QUESTION?????? follow the code below to start the auth project
 
 
 
@@ -3511,3 +3512,769 @@ return <h1>DB Page {process.env.NEXT_PUBLIC_ID}</h1>
 
 
 
+
+////////////////////////////////////////////
+AUTHENTICATION
+////////////////////////////////////////////
+
+
+
+in next js, we have to consider authentication from 3 perspectives
+
+1. client side authentication
+2. server side authentication
+3. api routes authentication
+
+
+next js provides a library called nextauth.js to assist with authentication
+
+
+
+we will set up nextauth with github as an auth provider
+
+
+create a new next app called auth
+
+
+https://github.com/gopinav/Next-JS-Tutorials/tree/b34314cf747f870e478805ecf531a3ca0d11071c/next-authentication
+
+
+create a components folder Navbar.js paste the code below
+import Link from 'next/link'
+
+function Navbar() {
+  return (
+    <nav className='header'>
+      <h1 className='logo'>
+        <a href='#'>NextAuth</a>
+      </h1>
+      <ul className='main-nav'>
+        <li>
+          <Link href='/'>
+            <a>Home</a>
+          </Link>
+        </li>
+        <li>
+          <Link href='/dashboard'>
+            <a>Dashboard</a>
+          </Link>
+        </li>
+        <li>
+          <Link href='/blog'>
+            <a>Blog</a>
+          </Link>
+        </li>
+
+        <li>
+          <a href='#'>Sign In</a>
+        </li>
+        <li>
+          <a href='#'>Sign Out</a>
+        </li>
+      </ul>
+    </nav>
+  )
+}
+
+export default Navbar
+
+create Navbar.css and use the code below
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+h2,
+h3,
+a {
+  color: #34495e;
+}
+
+a {
+  text-decoration: none;
+}
+
+.logo {
+  margin: 0;
+  font-size: 1.45em;
+}
+
+.main-nav {
+  display: flex;
+  margin-top: 5px;
+}
+
+.logo a,
+.main-nav a {
+  padding: 10px 15px;
+  text-transform: uppercase;
+  text-align: center;
+  display: block;
+}
+
+.main-nav a {
+  color: #34495e;
+  font-size: 0.99em;
+}
+
+.main-nav a:hover {
+  color: #718daa;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-color: #f4f4f4;
+  -webkit-box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.75);
+}
+
+.loading {
+  opacity: 0;
+  transition: all 0.2s ease-in;
+}
+
+.loaded {
+  opacity: 1;
+  transition: all 0.2s ease-in;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? wire the Navbar with its styles to show on every page
+??????QUESTION?????? create a dashboard and blog page which will simply display h1 text
+??????QUESTION?????? set up github application to your project using next-auth
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+in _app.js, import Navbar.js with its styles
+
+  return (
+      <>
+        <Navbar />
+        <Component {...pageProps} />
+      </>
+      )
+
+
+in pages, create dashboard.js and blog.js which are simple pages just displaying the respective text
+
+function Dashboard() {
+    return <h1>Dashboard</h1>
+}
+
+export default Dashboard
+
+
+
+
+everything is now set, we will install the auth package
+
+~ npm i next-auth
+
+
+
+we will then configure next-auth with a github provider
+
+
+in the api folder, create a new folder called auth and create a catch all route [...nextauth].js
+
+import NextAuth from "next-auth";
+import GithubProvider from "next-auth/providers/github"
+
+
+we will the export default NextAuth passing in a configuration object which accepts several keys
+
+
+providers is one of the keys that we will pass. it provides the services that can be used to sign in a user. since you can configure multiple services, this property is an array. for our example though, we will only look at github as a provider
+
+export default NextAuth({
+    providers: [
+        GithubProvider({
+            clientId: '',
+            clientSecret: ''
+        })
+    ]
+})
+
+GitHub requires a clientId and clientSecret which we will get from github
+
+
+go to github > settings > developer settings > OAuth Apps and register a new application
+
+
+Name - NextAuth
+Homepage URL/ Authorization callback URL - http://localhost:3000
+
+
+after registering the application, we can get a client id and client secret. we don't want these added to the code repo so we will add them as environment variables
+
+GITHUB_ID=995008b350c7245427c3
+GITHUB_SECRET=6d02241d7a0d98aa4b91fdc0453889eac456e233
+
+
+we will then use this in api/auth
+
+export default NextAuth({
+    providers: [
+        GithubProvider({
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET
+        })
+    ]
+})
+
+
+
+
+to test if this works, go to /api/auth/signin in the browser where we will presented by a built in ui by next.js which after successful sign in redirects to the home page. we can confirm the signin by checking the cookies
+
+
+to test signout, visit /api/auth/signout
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? wire up the sign in and sign out button on the navbar
+??????QUESTION?????? since we only have github as our provider, by pass the built in signin  with github page and directly sign in a user when they click the sign in button
+
+
+
+
+
+
+
+
+
+
+
+
+we will set up the ui where we will have a button for signing in and out
+
+
+we already have these buttons on our navbar in components/Navbar.js
+
+
+import {signIn,signOut} from "next-auth/react";
+
+
+these two functions automatically navigate us to the signin and signout routes
+
+    <li>
+        <Link href="/api/auth/signin">
+            <a onClick={event => {
+                event.preventDefault()
+                signIn()
+            }}>Sign In</a>
+        </Link>
+    </li>
+    <li>
+        <Link href="/api/auth/signout">
+            <a onClick={event => {
+                event.preventDefault()
+                signOut()
+            }}>Sign Out</a>
+        </Link>
+    </li>
+
+
+since we have only one auth provider, we can specify the same as an argument in the signIn method which will skip the built in signIn ui page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? show either the sign in or sign out button on the navbar based on the authentication status of the user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+we will now look at client side authentication with next auth i.e. showing/ hiding content based on whether a user is signed in or not
+
+
+we only want to show the sign in button when the user is not signed in and show the sign out button only when the user is signed in
+
+
+we use a useSession hook provided by next auth
+
+
+in order to use useSession, Make sure that <SessionProvider> is added to pages/_app.js
+
+import {SessionProvider} from "next-auth/react";
+
+
+        <>
+            <SessionProvider>
+                <Navbar/>
+                <Component {...pageProps} />
+            </SessionProvider>
+        </>
+
+
+Navbar.js
+
+import {signIn, signOut, useSession} from "next-auth/react";
+
+
+we will call the hook within the component. useSession() returns an object containing two values: data and status:
+
+1. data
+   This can be three values:
+    - undefined : when the session hasn't been fetched yet
+    - null : in case it failed to retrieve the session
+    - Session : in case successfully retrieves the session
+
+2. status
+   enum mapping to three possible session states: "loading" | "authenticated" | "unauthenticated"
+
+
+we will destructure status from use session and create a helper function to do conditional rendering
+
+    const {status} = useSession()
+
+    const renderAuthButton = () => {
+        if (status === "authenticated"){
+            return(
+                <li>
+                    <Link href="/api/auth/signout">
+                        <a onClick={event => {
+                            event.preventDefault()
+                            signOut()
+                        }}>Sign Out</a>
+                    </Link>
+                </li>
+            )
+        }
+
+        return(
+            <li>
+                <Link href="/api/auth/signin">
+                    <a onClick={event => {
+                        event.preventDefault()
+                        signIn('github')
+                    }}>Sign In</a>
+                </Link>
+            </li>
+        )
+    }
+
+
+
+we will then replace the li's for sign in and sign out with this function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? make the dashboard page only accessible to signed in users
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+securing pages client side
+
+
+at the moment, even when a user isn't logged in, they can view the dashboard page. we want to secure this page and only make it accessible to users who have logged in. if they're not logged in, we will redirect them to the log in page
+
+
+for this we will use useSession in dashboard.js
+
+import {signIn, useSession} from "next-auth/react";
+
+function Dashboard() {
+    const {status} = useSession()
+
+    if (status === "loading"){
+       return <h1>Loading...</h1>
+    } else if (status === "unauthenticated"){
+        signIn()
+    } else if (status === "authenticated"){
+        return <h1>Dashboard</h1>
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? perform server side authentication in /blog. if a user is signed in, the page should print personalized blogs else it should print normal blogs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SERVER SIDE AUTHENTICATION i.e. authentication in getServerSideProps
+
+
+for our example, we're going to assume that the blog page needs to be server side rendered
+
+
+add the getServerSideProps in blogs.js
+
+
+we will use the getSession function provided by next js
+
+
+getSession can be used both client side and server side and it returns a promise if a user is signed in or null if a user is not signed in
+
+
+calling getSession in client side is straight forward, however for server side, we need to pass the request information  which in getServerSideProps is contained in the context object
+
+
+import {getSession} from "next-auth/react";
+
+function Blog({data}) {
+    return <h1>Blog - {data}</h1>
+}
+
+export default Blog
+
+export async function getServerSideProps(context) {
+    const session = await getSession(context)
+
+    return{
+        props: {
+            data: session ? 'Personalized blogs' : 'Normal blogs'
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? secure the blog page server side and make it only accessible for signed in users
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+securing pages server side
+
+we'll use the blog page for our example, only signed in users can view the page. if the users are not signed in they should be redirected to the sign in with github page
+
+
+export async function getServerSideProps(context) {
+    const session = await getSession(context)
+
+    if (!session){
+        return {
+            redirect: {
+                destination: '/api/auth/signin?callbackUrl=http://localhost:3000/blog',
+                permanent: false
+            }
+        }
+    }
+
+    return{
+        props: {
+            data: session ? 'Personalized blogs' : 'Normal blogs'
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+??????QUESTION?????? in api, create a file called test-session.js in case a user is signed in, display a Success and if not display Error
+
+
+
+
+
+
+
+
+
+
+
+
+
+securing API routes
+
+
+in the api folder, create test-session.js
+
+
+import {getSession} from "next-auth/react";
+
+export default async function handler(req, res) {
+    const session = await getSession({req: req})
+
+    if (!session){
+        res.status(401).json({error: 'Unauthenticated user'})
+    } else {
+        res.status(200).json({message: 'Success'})
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+connecting to a database
+
+the next auth package can be used with any database. we will look at how to store user email and password using mongodb
+
+
+we're going to connect to a mongodb atlas db
+
+
+~ npm i mongodb
+
+we will then add our mongodb configuration to .env.local
+
+DB_USER=faizscripts
+DB_PASSWORD=Ziaf_1995
+DB_URL=mongodb+srv://$DB_USER:$DB_PASSWORD@cluster0.3qwle7h.mongodb.net/NextAuthDB?retryWrites=true&w=majority
+
+
+/api/[...nextauth].js
+
+export default NextAuth({
+    providers: [
+        GithubProvider({
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET
+        })
+    ],
+    database: process.env.DB_URL,
+    session: {
+        jwt: true
+    },
+    jwt:{
+        secret: 'A_RANDOM_STRING'
+    }
+})
+
+
+
+when we specify a db, next auth will automatically track session state using the db. that is one way to manage the db but the instructor prefers using jwt.
+
+
+for this we add the session key whose value is an object where we will ask next auth to use jwt for session management and not db
+
+
+if we set jwt to true, we need to specify a secret which will be used for key generation
+
+
+
+
+after a successful sign in, the credentials of the user should be saved to the db in mongodb atlas. However, my code was not saving the credentials in mongodb atlas despite it not showing any error
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+callbacks
+
+at the moment, our session object contains a user object which contains email which is null, image and name. however none of these values will help us uniquely identify a user
+
+
+we will add a unique id field to the session object
+
+
+/api/auth/[...nextauth].js
+
+
+
+    callbacks: {
+        async jwt(token,user){
+            if (user){
+                token.id = user.id
+            }
+            return token
+        },
+        async session(session, token){
+            session.user.id = token.id
+            return session
+        }
+    }
+
+
+
+
+
+THIS DIDN'T WORK AS WELL !!!!!!!!!!!!!!
