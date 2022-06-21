@@ -64,6 +64,8 @@ next js simplifies the process of building a react app for production in the fol
 
 this will then prompt you to enter the project name
 
+OR you can alternatively run npx create-next-app projectName
+
 
 the 3 most important files will be public for storing static files, styles and pages which is the most important
 
@@ -82,6 +84,9 @@ npm run build is to build for production and npm start to run the production ver
 
 
  open index and delete everything inside the main div. print a h1 tag of Hello Next World
+
+
+
 
 
 
@@ -764,7 +769,11 @@ return{
 
 
 
+
+
+
 ??????QUESTION?????? run our prerendering app in production mode and inspect the terminal and the folders created
+??????QUESTION?????? run the code in your browser, open the network tab, hard reload and look at the resources received from the server when hard reloading / and /users.
 ??????QUESTION?????? in pages/index, create a link to users.js. rebuild the project and run it again
 ??????QUESTION?????? run the code in your browser, open the network tab, hard reload and look at the resources received from the server when hard reloading / and /users. explain the difference between the first run above and this second run after adding the users link
 
@@ -784,10 +793,10 @@ return{
 we will now look at how to build our next js application and take a look at the build output to understand the static generation form of pre rendering more
 
 
-in our root folder, we have a .next folder which is created automatically when we run our project in dev mode. we will delete this as running our project in production mode will also automatically create a new .next file
+in our root folder, we have a .next folder which is created automatically when we run our project in dev mode
 
 
-after deleting, run npm run build in the terminal
+run npm run build in the terminal
 
 
 the output of this is the types of pages created e.g. static, SSG and the sizes of the pages. green colors on the sizes show they're optimum
@@ -829,7 +838,6 @@ in simpler terms, client side page transitions will not call getStaticProps as o
 
 
 
-create pages/posts/index.js
 
 
 
@@ -847,8 +855,9 @@ create pages/posts/index.js
 
 
 
-??????QUESTION?????? in pages, create a folder called posts and inside it index.js and [postId]. we will use these tp statically generate dynamic data
-??????QUESTION?????? in index.js fetch the first 3 posts from https://jsonplaceholder.typicode.com/posts. print the post id and title on the screen using h2
+
+??????QUESTION?????? in pages, create a folder called posts and inside it index.js and [postId]. we will use these to statically generate dynamic data
+??????QUESTION?????? in posts/index.js fetch the first 3 posts from https://jsonplaceholder.typicode.com/posts. print the post id and title on the screen using h2
 ??????QUESTION?????? [postId].js should print out the details of a specific post i.e. post id, title and body
 ??????QUESTION?????? wire up links from root index.js to [postId].js and test this out on the browser
 
@@ -1121,7 +1130,7 @@ the false value is most suitable if you have an application with a small number 
 
 ??????QUESTION?????? explain what happens when fallback is set to true
 ??????QUESTION?????? change the code to fetch for 3 posts instead of the 100 posts, modify posts/index.js and [postId].js
-??????QUESTION?????? set fallback to true and make the necessary changes in [postId].js to support the fallback page which can simply be a Loading... text
+??????QUESTION?????? set fallback to true and make the necessary changes in [postId].js to support the fallback page which can simply be a Loading... text. go to /posts/4 in the browser
 ??????QUESTION?????? in the case a user enters an invalid url to post/postId, display the 404 page. build and run this in the browser
 ??????QUESTION?????? in what scenarios would fallback true be most applicable
 
@@ -1385,9 +1394,12 @@ this is a good pre rendering solution. however, there can be situations where we
 
 
 
+
+
+
 ??????QUESTION?????? what are the issues of static generation
 ??????QUESTION?????? install json-server, npm i json-server
-??????QUESTION?????? create a new file called db.json which will contain the code below
+??????QUESTION?????? create a new file called db.json at the project root which will contain the code below
  {
    "news": [
      {
@@ -1411,7 +1423,7 @@ this is a good pre rendering solution. however, there can be situations where we
    ]
  }
 ??????QUESTION?????? add a start script to package.json "serve-json": "json-server --watch db.json --port 4000" and start the json-server in a new terminal window
-??????QUESTION?????? create a new route to /news which will display a list of news articles pre-rendered using SSR
+??????QUESTION?????? create a new route to /news which will display a list of news articles (id, title | category) pre-rendered using SSR
 
 
 
@@ -1436,7 +1448,7 @@ SERVER SIDE RENDERING
 SSR is the second form of pre rendering other than static generation
 
 
-as mentioned earlier, static generation pre-renders a page at build time (with exception to getStaticPaths which pre-renders on initial request and ISR which re-generates and pre-renders the pages when the validation time expires)
+as mentioned earlier, static generation pre-renders a page at build time (with exception to getStaticPaths fallback true and 'blocking' which pre-renders on initial request and ISR which re-generates and pre-renders the pages when the validation time expires)
 
 
 we looked at the issues of static generation
@@ -1454,7 +1466,7 @@ we will assume that we're building a news website where we will display a list o
 
 
 
-~ npm i jsonserver
+~ npm i json-server
 
 
 in project root, create a file called db.json and add the following code
@@ -1651,6 +1663,9 @@ export async function getServerSideProps(context) {
 
 
 
+
+
+
 ??????QUESTION?????? what are some of the other useful objects we can get from the context object in getServerSideProps
 ??????QUESTION?????? build the project and run. what are the differences between static generation and server side rendering
 
@@ -1699,7 +1714,17 @@ if we visit a page, it will be pre-rendered on request and even after this the h
 
 
 
+
+
+
+
 ??????QUESTION?????? add the following code to db.json
+ "dashboard": {
+    "posts": 5,
+    "likes": 100,
+    "followers": 20,
+    "following": 50
+  }
 ??????QUESTION?????? create a route to /dashboard which will do client side rendering to display posts, likes, followers and following from db.json. Display a loading text in the case data hasn't been fetched yet i.e. when it is fetching
 
 
@@ -1994,7 +2019,7 @@ add the following code to db.json
 
 
 ??????QUESTION?????? in pages, create events.js which will fetch a list of all the events using SSR. map through this list and print the id, title, date, category, description for each event
-??????QUESTION?????? create a button at the top of the page which filters only events with the category sport. use client side data fetching and filtering using query parameters for this. also make sure the url updates to /events?category=sports when the button is clicked
+??????QUESTION?????? create a button at the top of the page which filters only events with the category sport. use client side data fetching and filtering using query parameters for this. also make sure the url updates to /events?category=sports when the button is clicked. test this by pasting this url on a new tab http://localhost:3000/events?category=sports
 
 
 
@@ -2172,7 +2197,7 @@ API ROUTES
 ///////////////////////////////////////////
 
 
-next.js is a full stack framework. you can write FE code in react and also write APIs that can be called by the FE code
+next.js is a full stack framework. you can write front end code in react and also write APIs that can be called by the front end code
 
 
 API routes allow you to create RESTful endpoints as part of your next.js application folder structure
@@ -2186,7 +2211,7 @@ next.js gives you everything you need to write full stack react + node applicati
 
 create a new project called api
 
-in styles delete home, in pages delete api and index
+in styles delete home, in pages delete api and index.js
 
 
 in pages create a folder called api and inside it create index.js
@@ -2364,6 +2389,8 @@ export default function handler (req, res) {
         res.status(201).json(comments)
     }
 }
+
+
 
 
 
@@ -3002,6 +3029,7 @@ the Head components helps you dynamically manage a documents head section
 
 we will add a title and description to our about page
 
+import Head from "next/head";
 
 function About() {
     return (
@@ -3023,6 +3051,9 @@ specifying head tags in all pages can be hectic. we can specify it once in _app.
 
 
 _app.js
+
+import Head from "next/head";
+...
 
         <>
             <Head>
@@ -3048,7 +3079,7 @@ next js will also merge the Head component from _app.js and for the individual c
 
 
 
-??????QUESTION?????? download 5 pet images from unsplash and paste them in the public folder
+??????QUESTION?????? download 5 pet images from unsplash and paste them in the public folder and name them 1.jpg to 5.jpg
 ??????QUESTION?????? create a pets page and use next js Image component to render the 5 images using a blur image while the image is loading
 
 
@@ -3193,6 +3224,7 @@ we can also define other aliases
 
 
 this means instead of writing components/layout/*, we can use @/layout/*
+
 
 
 
@@ -3539,7 +3571,7 @@ create a new next app called auth
 https://github.com/gopinav/Next-JS-Tutorials/tree/b34314cf747f870e478805ecf531a3ca0d11071c/next-authentication
 
 
-create a components folder Navbar.js paste the code below
+create a components folder and inside it Navbar.js paste the code below
 import Link from 'next/link'
 
 function Navbar() {
@@ -3578,7 +3610,7 @@ function Navbar() {
 
 export default Navbar
 
-create Navbar.css and use the code below
+create Navbar.css and paste the code below
 
 ul {
   margin: 0;
@@ -3663,7 +3695,9 @@ a {
 
 ??????QUESTION?????? wire the Navbar with its styles to show on every page
 ??????QUESTION?????? create a dashboard and blog page which will simply display h1 text
-??????QUESTION?????? set up github application to your project using next-auth
+??????QUESTION?????? set up github application to your project using next-auth using the credentials below. test using /api/auth/signin and /api/auth/signout
+GITHUB_ID=995008b350c7245427c3
+GITHUB_SECRET=6d02241d7a0d98aa4b91fdc0453889eac456e233
 
 
 
@@ -3802,7 +3836,9 @@ we already have these buttons on our navbar in components/Navbar.js
 import {signIn,signOut} from "next-auth/react";
 
 
-these two functions automatically navigate us to the signin and signout routes
+these two functions automatically navigate us to the signin and signout routes i.e /api/auth/signin
+
+since we're going to use our own event handler, we will prevent the default behaviour of the anchor tag
 
     <li>
         <Link href="/api/auth/signin">
@@ -3822,7 +3858,9 @@ these two functions automatically navigate us to the signin and signout routes
     </li>
 
 
-since we have only one auth provider, we can specify the same as an argument in the signIn method which will skip the built in signIn ui page
+since we have only one auth provider which is github, we can specify the github as an argument in the signIn method which will skip the built in signIn ui page
+
+signIn('github')
 
 
 
@@ -3946,7 +3984,7 @@ we will then replace the li's for sign in and sign out with this function
 
 
 
-??????QUESTION?????? make the dashboard page only accessible to signed in users
+??????QUESTION?????? make the dashboard page only accessible to signed in users using client side authentication. if they're not signed in they should be taken to the sign in with page
 
 
 
@@ -4070,7 +4108,7 @@ export async function getServerSideProps(context) {
 
 
 
-??????QUESTION?????? secure the blog page server side and make it only accessible for signed in users
+??????QUESTION?????? secure the blog page server side and make it only accessible for signed in users. if the users are not signed in they should be redirected to the sign in with github page and after a successful sign in taken to the blogs page
 
 
 
@@ -4187,31 +4225,67 @@ we're going to connect to a mongodb atlas db
 
 ~ npm i mongodb
 
+~ npm i @next-auth/mongodb-adapter mongodb
+
 we will then add our mongodb configuration to .env.local
 
 DB_USER=faizscripts
 DB_PASSWORD=Ziaf_1995
-DB_URL=mongodb+srv://$DB_USER:$DB_PASSWORD@cluster0.3qwle7h.mongodb.net/NextAuthDB?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://$DB_USER:$DB_PASSWORD@cluster0.3qwle7h.mongodb.net/NextAuthDB?retryWrites=true&w=majority
+
+in project root, create a folder called lib and inside it a file called mongodb.js
+
+// This approach is taken from https://github.com/vercel/next.js/tree/canary/examples/with-mongodb
+import { MongoClient } from "mongodb"
+
+const uri = process.env.MONGODB_URI
+const options = {
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
+}
+
+let client
+let clientPromise
+
+if (!process.env.MONGODB_URI) {
+  throw new Error("Please add your Mongo URI to .env.local")
+}
+
+if (process.env.NODE_ENV === "development") {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options)
+    global._mongoClientPromise = client.connect()
+  }
+  clientPromise = global._mongoClientPromise
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, options)
+  clientPromise = client.connect()
+}
+
+// Export a module-scoped MongoClient promise. By doing this in a
+// separate module, the client can be shared across functions.
+export default clientPromise
 
 
 /api/[...nextauth].js
 
+import NextAuth from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
+import clientPromise from "../../../lib/mongodb";
+
 export default NextAuth({
     providers: [
-        GithubProvider({
+        GitHubProvider({
             clientId: process.env.GITHUB_ID,
             clientSecret: process.env.GITHUB_SECRET
         })
     ],
-    database: process.env.DB_URL,
-    session: {
-        jwt: true
-    },
-    jwt:{
-        secret: 'A_RANDOM_STRING'
-    }
+    adapter: MongoDBAdapter(clientPromise)
 })
-
 
 
 when we specify a db, next auth will automatically track session state using the db. that is one way to manage the db but the instructor prefers using jwt.
@@ -4221,8 +4295,6 @@ for this we add the session key whose value is an object where we will ask next 
 
 
 if we set jwt to true, we need to specify a secret which will be used for key generation
-
-
 
 
 after a successful sign in, the credentials of the user should be saved to the db in mongodb atlas. However, my code was not saving the credentials in mongodb atlas despite it not showing any error
@@ -4250,7 +4322,7 @@ after a successful sign in, the credentials of the user should be saved to the d
 
 callbacks
 
-at the moment, our session object contains a user object which contains email which is null, image and name. however none of these values will help us uniquely identify a user
+at the moment, our session object (you can console log it from client side) contains a user object which contains email which is null(mine contained email though 👀 ), image and name. however none of these values will help us uniquely identify a user
 
 
 we will add a unique id field to the session object
@@ -4277,4 +4349,4 @@ we will add a unique id field to the session object
 
 
 
-THIS DIDN'T WORK AS WELL !!!!!!!!!!!!!!
+THIS DIDN'T WORK. however my session object contained an email which can be used as a unique id  !!!!!!!!!!!!!!
